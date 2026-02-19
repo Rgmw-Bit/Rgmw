@@ -11,7 +11,19 @@ if(!localStorage.getItem("usuarioExperiencia")) {
     localStorage.setItem("usuarioExperiencia", "recurrente");
 }
 
-// 2️⃣ Array de saludos gatunos y con personalidad
+// 2️⃣ Crear historial de mensajes si no existe
+if(!localStorage.getItem("historialRgmw")) {
+    localStorage.setItem("historialRgmw", JSON.stringify([]));
+}
+
+// 3️⃣ Función para guardar mensajes en historial
+function guardarHistorial(usuario, mensaje) {
+    const historial = JSON.parse(localStorage.getItem("historialRgmw"));
+    historial.push({usuario, mensaje, fecha: new Date()});
+    localStorage.setItem("historialRgmw", JSON.stringify(historial));
+}
+
+// 4️⃣ Array de saludos gatunos y con personalidad
 const saludos = [
     "Hola, soy Rgmw 😼. ¿Listo para charlar un rato?",
     "Miau 😸… soy Rgmw, tu asistente felino y curioso.",
@@ -20,16 +32,51 @@ const saludos = [
     "Hola 😺… Rgmw al habla, listo para analizar tus ideas y jugar un poco."
 ];
 
-// 3️⃣ Función para elegir saludo según comportamiento
-function saludoRgmw() {
-    if(localStorage.getItem("usuarioExperiencia") === "nuevo") {
-        return saludos[0]; // primer saludo para usuarios nuevos
-    } else {
-        return saludos[Math.floor(Math.random() * saludos.length)];
+// 5️⃣ Función para analizar comportamiento del usuario
+function analizarComportamiento(msg) {
+    msg = msg.toLowerCase();
+    if(msg.includes("jugar") || msg.includes("ajedrez") || msg.includes("divertido")) {
+        return "jugueton"; 
     }
+    if(msg.includes("problema") || msg.includes("analizar")) {
+        return "analitico"; 
+    }
+    if(msg.includes("hola") || msg.includes("hey")) {
+        return "amistoso"; 
+    }
+    return "neutral"; 
 }
 
-// 4️⃣ Función para agregar mensajes al chat
+// 6️⃣ Saludos adaptativos según historial y comportamiento
+function saludoAdaptativo() {
+    const historial = JSON.parse(localStorage.getItem("historialRgmw"));
+    let saludo = "";
+
+    if(historial.length === 0) {
+        saludo = "Hola, soy Rgmw 😼. Listo para charlar un rato.";
+    } else {
+        const ultimo = historial[historial.length - 1].mensaje;
+        const comportamiento = analizarComportamiento(ultimo);
+
+        switch(comportamiento) {
+            case "jugueton":
+                saludo = "Miau 😸… ¡veo que quieres jugar o divertirte!";
+                break;
+            case "analitico":
+                saludo = "Hmm 😼… listo para analizar tus ideas conmigo.";
+                break;
+            case "amistoso":
+                saludo = "¡Hola de nuevo! 😺 Qué gusto verte charlar otra vez.";
+                break;
+            default:
+                saludo = "Hola 😼… ¿qué tal hoy?";
+        }
+    }
+
+    return saludo;
+}
+
+// 7️⃣ Función para agregar mensajes al chat
 function addMessage(sender, text) {
     const div = document.createElement("div");
     div.classList.add(sender === "user" ? "userMsg" : "rgmwMsg");
@@ -38,7 +85,7 @@ function addMessage(sender, text) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 5️⃣ Función para generar respuestas simuladas
+// 8️⃣ Función para generar respuestas simuladas
 function getRgmwResponse(msg) {
     msg = msg.toLowerCase();
     const responses = [
@@ -53,24 +100,29 @@ function getRgmwResponse(msg) {
     return responses[Math.floor(Math.random() * responses.length)];
 }
 
-// 6️⃣ Mostrar saludo inicial al cargar
-addMessage("rgmw", saludoRgmw());
+// 9️⃣ Mostrar saludo inicial al cargar
+addMessage("rgmw", saludoAdaptativo());
 
-// 7️⃣ Botón enviar
+// 🔟 Botón enviar
 sendBtn.addEventListener("click", () => {
     const message = userInput.value.trim();
     if (!message) return;
     addMessage("user", message);
-    setTimeout(() => addMessage("rgmw", getRgmwResponse(message)), 500);
+    guardarHistorial("usuario", message);
+    setTimeout(() => {
+        const respuesta = getRgmwResponse(message);
+        addMessage("rgmw", respuesta);
+        guardarHistorial("rgmw", respuesta);
+    }, 500);
     userInput.value = "";
     userInput.focus();
 });
 
-// 8️⃣ Enviar con Enter
+// 1️⃣1️⃣ Enviar con Enter
 userInput.addEventListener("keydown", e => { if(e.key === "Enter") sendBtn.click(); });
 
-// 9️⃣ Botón Nuevo Chat
+// 1️⃣2️⃣ Botón Nuevo Chat
 newChatBtn.addEventListener("click", () => {
     chatBox.innerHTML = "";
-    addMessage("rgmw", "Nuevo chat iniciado. " + saludoRgmw());
+    addMessage("rgmw", "Nuevo chat iniciado. " + saludoAdaptativo());
 });
