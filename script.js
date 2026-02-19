@@ -126,3 +126,39 @@ newChatBtn.addEventListener("click", () => {
     chatBox.innerHTML = "";
     addMessage("rgmw", "Nuevo chat iniciado. " + saludoAdaptativo());
 });
+// 1️⃣3️⃣ Elementos para ajedrez
+const chessBtn = document.getElementById("chessBtn");
+const chessContainer = document.getElementById("chessContainer");
+
+// Mostrar u ocultar tablero al presionar el botón
+chessBtn.addEventListener("click", () => {
+    if(chessContainer.style.display === "none") {
+        chessContainer.style.display = "block";
+        iniciarTablero();
+    } else {
+        chessContainer.style.display = "none";
+    }
+});
+
+// Función para crear tablero simple 8x8
+function iniciarTablero() {
+    chessContainer.innerHTML = ""; // limpiar contenedor
+    const table = document.createElement("table");
+    table.style.borderCollapse = "collapse";
+    table.style.marginTop = "15px";
+    for(let i=0; i<8; i++){
+        const tr = document.createElement("tr");
+        for(let j=0; j<8; j++){
+            const td = document.createElement("td");
+            td.style.width = "50px";
+            td.style.height = "50px";
+            td.style.textAlign = "center";
+            td.style.verticalAlign = "middle";
+            td.style.cursor = "pointer";
+            td.style.backgroundColor = (i+j)%2===0 ? "#f0d9b5" : "#b58863"; // colores de tablero
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
+    }
+    chessContainer.appendChild(table);
+}
