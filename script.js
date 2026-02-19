@@ -130,7 +130,7 @@ newChatBtn.addEventListener("click", () => {
 const chessBtn = document.getElementById("chessBtn");
 const chessContainer = document.getElementById("chessContainer");
 
-let tablero = []; // guardará el estado de cada celda
+let tablero = []; // guarda el estado del tablero
 let seleccion = null; // para mover piezas
 
 chessBtn.addEventListener("click", () => {
@@ -149,6 +149,9 @@ function iniciarTablero() {
     table.style.borderCollapse = "collapse";
     table.style.marginTop = "15px";
 
+    const piezasBlancas = ["♖","♘","♗","♕","♔","♗","♘","♖"];
+    const piezasNegras = ["♜","♞","♝","♛","♚","♝","♞","♜"];
+
     for(let i=0;i<8;i++){
         const fila = [];
         const tr = document.createElement("tr");
@@ -163,22 +166,26 @@ function iniciarTablero() {
             td.dataset.row = i;
             td.dataset.col = j;
 
-            // click para seleccionar y mover piezas
             td.addEventListener("click", () => moverPieza(i,j,td));
 
             tr.appendChild(td);
-            fila.push(null); // vacío por ahora
+            fila.push(null); // vacío
         }
         table.appendChild(tr);
         tablero.push(fila);
     }
 
-    // Inicializar piezas (solo peones para ejemplo)
+    // Inicializar piezas
     for(let j=0;j<8;j++){
-        tablero[1][j] = "♟"; // peones negros
-        tablero[6][j] = "♙"; // peones blancos
+        tablero[0][j] = piezasNegras[j];
+        tablero[1][j] = "♟";
+        tablero[6][j] = "♙";
+        tablero[7][j] = piezasBlancas[j];
+
+        table.rows[0].cells[j].textContent = piezasNegras[j];
         table.rows[1].cells[j].textContent = "♟";
         table.rows[6].cells[j].textContent = "♙";
+        table.rows[7].cells[j].textContent = piezasBlancas[j];
     }
 
     chessContainer.appendChild(table);
@@ -188,26 +195,37 @@ function moverPieza(row,col,td) {
     if(seleccion === null) {
         if(tablero[row][col] !== null){
             seleccion = {row,col, pieza: tablero[row][col]};
-            td.style.outline = "3px solid orange"; // marca selección
+            td.style.outline = "3px solid orange";
         }
     } else {
-        // mover la pieza
-        tablero[seleccion.row][seleccion.col] = null;
-        td.textContent = seleccion.pieza;
-        td.style.outline = "none";
-        tablero[row][col] = seleccion.pieza;
+        if(tablero[row][col] === null || tablero[row][col] !== seleccion.pieza){
+            tablero[seleccion.row][seleccion.col] = null;
+            td.textContent = seleccion.pieza;
+            tablero[row][col] = seleccion.pieza;
 
-        // limpiar selección
-        const table = td.parentElement.parentElement;
-        for(let i=0;i<8;i++){
-            for(let j=0;j<8;j++){
-                table.rows[i].cells[j].style.outline = "none";
+            // limpiar selección visual
+            const table = td.parentElement.parentElement;
+            for(let i=0;i<8;i++){
+                for(let j=0;j<8;j++){
+                    table.rows[i].cells[j].style.outline = "none";
+                }
             }
+
+            // guardar movimiento en historial
+            guardarHistorial("usuario", `Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
+
+            // comentario gatuno
+            const comentarios = [
+                "Miau 😼… buen movimiento",
+                "Hmm 😺… veo tu estrategia",
+                "Ja! 😸 interesante jugada",
+                "😼 Hmm… eso me hace pensar"
+            ];
+            const randomComentario = comentarios[Math.floor(Math.random()*comentarios.length)];
+            addMessage("rgmw", randomComentario);
+            guardarHistorial("rgmw", randomComentario);
+
+            seleccion = null;
         }
-
-        // guardar movimiento en historial
-        guardarHistorial("usuario", `Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
-
-        seleccion = null;
     }
 }
