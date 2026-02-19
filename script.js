@@ -126,6 +126,7 @@ newChatBtn.addEventListener("click", () => {
     chatBox.innerHTML = "";
     addMessage("rgmw", "Nuevo chat iniciado. " + saludoAdaptativo());
 });
+
 // 1️⃣3️⃣ Elementos para ajedrez
 const chessBtn = document.getElementById("chessBtn");
 const chessContainer = document.getElementById("chessContainer");
@@ -191,7 +192,7 @@ function iniciarTablero() {
     chessContainer.appendChild(table);
 }
 
-// Función para validar movimientos según tipo de pieza
+// Validación de movimientos
 function movimientoValido(pieza, fromRow, fromCol, toRow, toCol) {
     const difRow = toRow - fromRow;
     const difCol = toCol - fromCol;
@@ -218,6 +219,37 @@ function movimientoValido(pieza, fromRow, fromCol, toRow, toCol) {
     }
 }
 
+// ✅ Función para detectar jaque
+function estaEnJaque(color) {
+    let rey = color === "blanco" ? "♔" : "♚";
+    let reyPos = null;
+
+    for(let i=0;i<8;i++){
+        for(let j=0;j<8;j++){
+            if(tablero[i][j] === rey){
+                reyPos = {row:i, col:j};
+                break;
+            }
+        }
+        if(reyPos) break;
+    }
+
+    for(let i=0;i<8;i++){
+        for(let j=0;j<8;j++){
+            const pieza = tablero[i][j];
+            if(!pieza) continue;
+            if((color==="blanco" && pieza === pieza.toLowerCase()) || (color==="negro" && pieza === pieza.toUpperCase())){
+                if(movimientoValido(pieza, i, j, reyPos.row, reyPos.col)){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+// moverPieza con jaque integrado
 function moverPieza(row,col,td) {
     if(seleccion === null) {
         if(tablero[row][col] !== null){
@@ -248,6 +280,12 @@ function moverPieza(row,col,td) {
             const randomComentario = comentarios[Math.floor(Math.random()*comentarios.length)];
             addMessage("rgmw", randomComentario);
             guardarHistorial("rgmw", randomComentario);
+
+            // ✅ comprobar jaque
+            const colorRey = seleccion.pieza === seleccion.pieza.toUpperCase() ? "blanco" : "negro";
+            if(estaEnJaque(colorRey === "blanco" ? "negro" : "blanco")){
+                addMessage("rgmw", "😼 Atención… ¡jaque!");
+            }
 
             seleccion = null;
         }else{
