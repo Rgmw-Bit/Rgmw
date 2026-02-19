@@ -1,162 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Rgmw - Chat & Ajedrez Inteligente</title>
-    <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-    <style>
-        body {
-            background-color: black;
-            color: #00ff00;
-            font-family: "Courier New", monospace;
-            text-align: center;
-            padding: 20px;
-        }
+<meta charset="UTF-8">
+<title>Rgmw - IA Profesional</title>
+<link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+<style>
+body { background-color:black; color:#00ff00; font-family:"Courier New", monospace; text-align:center; padding:20px; }
+h1 { font-size:3em; margin-bottom:0.5em; animation:glow 2s infinite alternate; }
+@keyframes glow { from {text-shadow:0 0 10px #00ff00;} to {text-shadow:0 0 30px #00ff00;} }
 
-        h1 {
-            font-size: 3em;
-            margin-bottom: 0.5em;
-            animation: glow 2s infinite alternate;
-        }
+#chatBox,#historyBox { width:80%; max-width:600px; background-color:#111; border:2px solid #00ff00; border-radius:10px; margin:10px auto; padding:10px; overflow-y:auto; text-align:left; height:150px; }
+#userInput { width:65%; padding:10px; font-family:monospace; font-size:1em; border:2px solid #00ff00; border-radius:5px; background-color:#111; color:#00ff00; }
+#sendBtn,#resetBtn { padding:10px 20px; font-size:1em; color:#00ff00; border:2px solid #00ff00; border-radius:5px; background-color:black; cursor:pointer; transition:0.3s; margin-left:5px; }
+#sendBtn:hover,#resetBtn:hover { background-color:#00ff00; color:black; }
+.message { margin:5px 0; }
+.userMsg { color:#00ffff; }
+.rgmwMsg { color:#ff00ff; }
 
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #00ff00; }
-            to { text-shadow: 0 0 30px #00ff00; }
-        }
-
-        #chatBox {
-            width: 80%;
-            max-width: 600px;
-            height: 200px;
-            background-color: #111;
-            border: 2px solid #00ff00;
-            border-radius: 10px;
-            margin: 20px auto;
-            padding: 10px;
-            overflow-y: auto;
-            text-align: left;
-        }
-
-        #userInput {
-            width: 70%;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 1em;
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-            background-color: #111;
-            color: #00ff00;
-        }
-
-        #sendBtn {
-            padding: 10px 20px;
-            font-size: 1em;
-            color: #00ff00;
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-            background-color: black;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        #sendBtn:hover { background-color: #00ff00; color: black; }
-
-        .message { margin: 5px 0; }
-        .userMsg { color: #00ffff; }
-        .rgmwMsg { color: #ff00ff; }
-
-        #board { width: 400px; margin: 20px auto; }
-    </style>
+#board { width:400px; margin:20px auto; }
+#difficulty { margin:10px; padding:5px; font-family:monospace; font-size:1em; border-radius:5px; background-color:#111; color:#00ff00; border:2px solid #00ff00; }
+</style>
 </head>
 <body>
-    <h1>Rgmw</h1>
-    <p>Interactúa con Rgmw y juega ajedrez inteligente.</p>
 
-    <div id="chatBox"></div>
-    <input type="text" id="userInput" placeholder="Escribe tu mensaje...">
-    <button id="sendBtn">Enviar</button>
+<h1>Rgmw</h1>
+<p>Interactúa con tu IA profesional y juega ajedrez.</p>
 
-    <h2>Tablero de ajedrez</h2>
-    <div id="board"></div>
+<div id="chatBox"></div>
+<input type="text" id="userInput" placeholder="Escribe tu mensaje...">
+<button id="sendBtn">Enviar</button>
+<button id="resetBtn">Reiniciar partida</button>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script>
-        // Chat
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
+<h3>Dificultad del ajedrez:</h3>
+<select id="difficulty">
+    <option value="1">Fácil 😸</option>
+    <option value="3" selected>Medio 😼</option>
+    <option value="5">Difícil 🐱‍👓</option>
+</select>
 
-        function addMessage(sender, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message');
-            msgDiv.classList.add(sender === 'user' ? 'userMsg' : 'rgmwMsg');
-            msgDiv.textContent = `${sender === 'user' ? 'Tú' : 'Rgmw'}: ${text}`;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+<h2>Tablero de ajedrez</h2>
+<div id="board"></div>
 
-        function getRgmwResponse(msg) {
-            msg = msg.toLowerCase();
-            const responses = [
-                'Interesante... cuéntame más.',
-                '¡Ja! Eso me hace pensar 😸',
-                'Hmm… déjame analizar eso...',
-                '¡Claro! Continuemos.',
-                '¿Quieres hablar de ajedrez o otra cosa?'
-            ];
-            if (msg.includes('hola')) return '¡Hola! 😸 Listo para jugar ajedrez o conversar.';
-            if (msg.includes('ajedrez')) return 'El tablero está listo. Haz tu movimiento.';
-            if (msg.includes('quién eres')) return 'Soy Rgmw, tu IA con personalidad de gato profesional.';
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
+<h2>Historial de la partida</h2>
+<div id="historyBox"></div>
 
-        sendBtn.addEventListener('click', () => {
-            const message = userInput.value.trim();
-            if (!message) return;
-            addMessage('user', message);
-            setTimeout(() => addMessage('rgmw', getRgmwResponse(message)), 500);
-            userInput.value = '';
-            userInput.focus();
-        });
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stockfish@15.1.0/stockfish.js"></script>
 
-        userInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+<script>
+// Chat
+const chatBox=document.getElementById('chatBox');
+const historyBox=document.getElementById('historyBox');
+const userInput=document.getElementById('userInput');
+const sendBtn=document.getElementById('sendBtn');
+const resetBtn=document.getElementById('resetBtn');
+const difficulty=document.getElementById('difficulty');
 
-        // Ajedrez inteligente
-        const game = new Chess();
-        const board = Chessboard('board', {
-            draggable: true,
-            position: 'start',
-            onDrop: handleMove
-        });
+function addMessage(sender,text){
+    const div=document.createElement('div');
+    div.classList.add('message',sender==='user'?'userMsg':'rgmwMsg');
+    div.textContent=`${sender==='user'?'Tú':'Rgmw'}: ${text}`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop=chatBox.scrollHeight;
+}
 
-        function handleMove(source, target) {
-            const move = game.move({ from: source, to: target, promotion: 'q' });
-            if (move === null) return 'snapback';
-            addMessage('rgmw', `Rgmw piensa...`);
-            setTimeout(makeRgmwMove, 700);
-        }
+function addHistory(text){
+    const div=document.createElement('div');
+    div.textContent=text;
+    historyBox.appendChild(div);
+    historyBox.scrollTop=historyBox.scrollHeight;
+}
 
-        function makeRgmwMove() {
-            const moves = game.moves();
-            if (moves.length === 0) {
-                addMessage('rgmw', '¡Juego terminado!');
-                return;
-            }
+function getRgmwResponse(msg){
+    msg=msg.toLowerCase();
+    const responses=[
+        'Interesante... cuéntame más.',
+        '¡Ja! Eso me hace pensar 😸',
+        'Hmm… déjame analizar eso...',
+        '¡Claro! Continuemos.',
+        '¿Quieres hablar de ajedrez o otra cosa?'
+    ];
+    if(msg.includes('hola')) return '¡Hola! 😸 Listo para jugar ajedrez o conversar.';
+    if(msg.includes('ajedrez')) return 'El tablero está listo. Haz tu movimiento.';
+    if(msg.includes('quién eres')) return 'Soy Rgmw, tu IA con personalidad de gato profesional.';
+    if(msg.includes('rey')) return 'Recuerda proteger tu rey 🏰.';
+    return responses[Math.floor(Math.random()*responses.length)];
+}
 
-            // Estrategia simple: mover aleatoriamente una pieza segura
-            let move = null;
-            while (!move) {
-                const candidate = moves[Math.floor(Math.random() * moves.length)];
-                if (!candidate.includes('e8') && !candidate.includes('d8')) { // evita jaque al rey por ahora
-                    move = candidate;
-                }
-            }
-            game.move(move);
+sendBtn.addEventListener('click',()=>{
+    const message=userInput.value.trim();
+    if(!message) return;
+    addMessage('user',message);
+    setTimeout(()=>addMessage('rgmw',getRgmwResponse(message)),500);
+    userInput.value=''; userInput.focus();
+});
+userInput.addEventListener('keydown',e=>{ if(e.key==='Enter') sendBtn.click(); });
+
+// Ajedrez con Stockfish
+let game=new Chess();
+const board=Chessboard('board',{draggable:true,position:'start',onDrop:handleMove});
+let engine=new Worker('https://cdn.jsdelivr.net/npm/stockfish@15.1.0/stockfish.js');
+
+function handleMove(source,target){
+    const move=game.move({from:source,to:target,promotion:'q'});
+    if(move===null) return 'snapback';
+    addHistory(`Tú: ${move.san}`);
+    addMessage('rgmw','Rgmw piensa...');
+    setTimeout(makeRgmwMove,500);
+}
+
+function makeRgmwMove(){
+    const moves=game.moves();
+    if(moves.length===0){ addMessage('rgmw','¡Juego terminado!'); return; }
+    const skill=parseInt(difficulty.value); // dificultad 1-5
+    engine.postMessage('uci');
+    engine.postMessage(`setoption name Skill Level value ${skill}`);
+    engine.postMessage(`position fen ${game.fen()}`);
+    engine.postMessage('go depth 10');
+
+    engine.onmessage=function(event){
+        const line=event.data;
+        if(line.startsWith('bestmove')){
+            const move=line.split(' ')[1];
+            if(move==='(none)') return;
+            game.move({from:move.substring(0,2),to:move.substring(2,4),promotion:'q'});
             board.position(game.fen());
-            addMessage('rgmw', `Rgmw movió: ${move}`);
+            addMessage('rgmw',`Rgmw movió: ${move}`);
+            addHistory(`Rgmw: ${move}`);
         }
-    </script>
+    }
+}
+
+// Reiniciar partida
+resetBtn.addEventListener('click',()=>{
+    game=new Chess();
+    board.position('start');
+    chatBox.innerHTML='';
+    historyBox.innerHTML='';
+    addMessage('rgmw','Partida reiniciada. ¡Comienza de nuevo!');
+});
+</script>
 </body>
 </html>
