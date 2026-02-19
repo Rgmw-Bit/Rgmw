@@ -1,70 +1,108 @@
-/* Fondo general y tipografía */
+/* 🖤 Fondo y fuente general */
 body {
-    background-color: #f5f5f5; /* gris muy claro, neutro */
-    color: #333333;            
+    background-color: #f9f9f9;
+    color: #111;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
 }
 
-/* Título */
+/* 🐾 Título */
 h1 {
-    text-align: center;
-    color: #4b4b4b;
-    margin-bottom: 20px;
-}
-
-/* Caja de chat */
-#chatBox {
-    background-color: #ffffff; 
-    border: 1px solid #cccccc;
-    padding: 20px;
-    height: 400px;
-    overflow-y: auto;
+    font-size: 2em;
     margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Mensajes de usuario */
-.userMsg {
-    color: #1a73e8;
-    margin: 8px 0;
-}
-
-/* Mensajes de Rgmw */
-.rgmwMsg {
-    color: #ff9900;
-    margin: 8px 0;
-}
-
-/* Input de usuario */
-#userInput {
-    width: 70%;
+/* 📦 Caja de chat */
+#chatBox {
+    width: 400px;
+    height: 400px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
     padding: 10px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #cccccc;
-    background-color: #ffffff;
-    color: #333333;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    background-color: #fff;
+    margin-bottom: 10px;
 }
 
-/* Botones */
-button {
-    padding: 10px 18px;
-    margin-left: 5px;
-    font-size: 16px;
+/* 💬 Mensajes */
+.userMsg {
+    text-align: right;
+    margin: 5px 0;
+    padding: 5px 10px;
+    background-color: #d1e7dd;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.rgmwMsg {
+    text-align: left;
+    margin: 5px 0;
+    padding: 5px 10px;
+    background-color: #e2e3e5;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+/* 📝 Input y botones */
+#userInput {
+    width: 300px;
+    padding: 8px;
     border-radius: 5px;
-    border: 1px solid #cccccc;
-    background-color: #ffffff;
-    color: #333333;
+    border: 1px solid #ccc;
+    margin-right: 5px;
+}
+
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4b6cb7;
+    color: white;
     cursor: pointer;
-    transition: all 0.2s ease;
+    font-weight: bold;
 }
 
 button:hover {
-    background-color: #ff9900;
-    color: #ffffff;
-    border-color: #ff9900;
+    background-color: #3a539b;
+}
+
+/* ♟ Contenedor del tablero */
+#chessContainer {
+    margin-top: 20px;
+}
+
+#chessContainer table {
+    border-collapse: collapse;
+}
+
+#chessContainer td {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/* ⚡ Colores del tablero */
+#chessContainer td:nth-child(even) {
+    background-color: #f0d9b5;
+}
+#chessContainer td:nth-child(odd) {
+    background-color: #b58863;
+}
+
+/* 🧹 Scroll automático bonito */
+#chatBox::-webkit-scrollbar {
+    width: 8px;
+}
+#chatBox::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+#chatBox::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
 }
