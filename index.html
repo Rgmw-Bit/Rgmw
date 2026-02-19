@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Rgmw - Chat y Ajedrez</title>
+    <title>Rgmw - Chat & Ajedrez Inteligente</title>
     <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         body {
@@ -59,27 +59,18 @@
             transition: 0.3s;
         }
 
-        #sendBtn:hover {
-            background-color: #00ff00;
-            color: black;
-        }
+        #sendBtn:hover { background-color: #00ff00; color: black; }
 
-        .message {
-            margin: 5px 0;
-        }
-
+        .message { margin: 5px 0; }
         .userMsg { color: #00ffff; }
         .rgmwMsg { color: #ff00ff; }
 
-        #board {
-            width: 400px;
-            margin: 20px auto;
-        }
+        #board { width: 400px; margin: 20px auto; }
     </style>
 </head>
 <body>
     <h1>Rgmw</h1>
-    <p>Interactúa con Rgmw y juega ajedrez.</p>
+    <p>Interactúa con Rgmw y juega ajedrez inteligente.</p>
 
     <div id="chatBox"></div>
     <input type="text" id="userInput" placeholder="Escribe tu mensaje...">
@@ -90,6 +81,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script>
         // Chat
         const chatBox = document.getElementById('chatBox');
@@ -107,33 +99,64 @@
 
         function getRgmwResponse(msg) {
             msg = msg.toLowerCase();
-            if (msg.includes('hola')) return '¡Hola! 😸 Listo para jugar ajedrez o chatear.';
-            if (msg.includes('ajedrez')) return 'Aquí tienes el tablero. Mueve las piezas haciendo click y arrastrando.';
+            const responses = [
+                'Interesante... cuéntame más.',
+                '¡Ja! Eso me hace pensar 😸',
+                'Hmm… déjame analizar eso...',
+                '¡Claro! Continuemos.',
+                '¿Quieres hablar de ajedrez o otra cosa?'
+            ];
+            if (msg.includes('hola')) return '¡Hola! 😸 Listo para jugar ajedrez o conversar.';
+            if (msg.includes('ajedrez')) return 'El tablero está listo. Haz tu movimiento.';
             if (msg.includes('quién eres')) return 'Soy Rgmw, tu IA con personalidad de gato profesional.';
-            return 'Interesante... Cuéntame más.';
+            return responses[Math.floor(Math.random() * responses.length)];
         }
 
         sendBtn.addEventListener('click', () => {
             const message = userInput.value.trim();
             if (!message) return;
             addMessage('user', message);
-            setTimeout(() => {
-                addMessage('rgmw', getRgmwResponse(message));
-            }, 500);
+            setTimeout(() => addMessage('rgmw', getRgmwResponse(message)), 500);
             userInput.value = '';
             userInput.focus();
         });
 
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') sendBtn.click();
-        });
+        userInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
 
-        // Tablero de ajedrez
+        // Ajedrez inteligente
+        const game = new Chess();
         const board = Chessboard('board', {
             draggable: true,
-            dropOffBoard: 'snapback',
-            position: 'start'
+            position: 'start',
+            onDrop: handleMove
         });
+
+        function handleMove(source, target) {
+            const move = game.move({ from: source, to: target, promotion: 'q' });
+            if (move === null) return 'snapback';
+            addMessage('rgmw', `Rgmw piensa...`);
+            setTimeout(makeRgmwMove, 700);
+        }
+
+        function makeRgmwMove() {
+            const moves = game.moves();
+            if (moves.length === 0) {
+                addMessage('rgmw', '¡Juego terminado!');
+                return;
+            }
+
+            // Estrategia simple: mover aleatoriamente una pieza segura
+            let move = null;
+            while (!move) {
+                const candidate = moves[Math.floor(Math.random() * moves.length)];
+                if (!candidate.includes('e8') && !candidate.includes('d8')) { // evita jaque al rey por ahora
+                    move = candidate;
+                }
+            }
+            game.move(move);
+            board.position(game.fen());
+            addMessage('rgmw', `Rgmw movió: ${move}`);
+        }
     </script>
 </body>
 </html>
