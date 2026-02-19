@@ -2,14 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Rgmw - Interactivo</title>
+    <title>Rgmw - Chat y Ajedrez</title>
+    <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         body {
             background-color: black;
             color: #00ff00;
             font-family: "Courier New", monospace;
             text-align: center;
-            padding: 30px;
+            padding: 20px;
         }
 
         h1 {
@@ -23,17 +24,10 @@
             to { text-shadow: 0 0 30px #00ff00; }
         }
 
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-bottom: 20px;
-        }
-
         #chatBox {
             width: 80%;
             max-width: 600px;
-            height: 300px;
+            height: 200px;
             background-color: #111;
             border: 2px solid #00ff00;
             border-radius: 10px;
@@ -74,26 +68,30 @@
             margin: 5px 0;
         }
 
-        .userMsg {
-            color: #00ffff;
-        }
+        .userMsg { color: #00ffff; }
+        .rgmwMsg { color: #ff00ff; }
 
-        .rgmwMsg {
-            color: #ff00ff;
+        #board {
+            width: 400px;
+            margin: 20px auto;
         }
     </style>
 </head>
 <body>
-    <img src="https://via.placeholder.com/150" alt="Avatar Rgmw" class="avatar">
     <h1>Rgmw</h1>
-    <p>Interactúa con tu IA Rgmw en este chat simulado.</p>
+    <p>Interactúa con Rgmw y juega ajedrez.</p>
 
     <div id="chatBox"></div>
-
     <input type="text" id="userInput" placeholder="Escribe tu mensaje...">
     <button id="sendBtn">Enviar</button>
 
+    <h2>Tablero de ajedrez</h2>
+    <div id="board"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script>
+        // Chat
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
@@ -108,10 +106,9 @@
         }
 
         function getRgmwResponse(msg) {
-            // Respuestas simples por ahora
             msg = msg.toLowerCase();
-            if (msg.includes('hola')) return '¡Hola! 😸 ¿Cómo estás?';
-            if (msg.includes('ajedrez')) return 'Podemos jugar una partida de ajedrez más adelante.';
+            if (msg.includes('hola')) return '¡Hola! 😸 Listo para jugar ajedrez o chatear.';
+            if (msg.includes('ajedrez')) return 'Aquí tienes el tablero. Mueve las piezas haciendo click y arrastrando.';
             if (msg.includes('quién eres')) return 'Soy Rgmw, tu IA con personalidad de gato profesional.';
             return 'Interesante... Cuéntame más.';
         }
@@ -130,7 +127,13 @@
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') sendBtn.click();
         });
+
+        // Tablero de ajedrez
+        const board = Chessboard('board', {
+            draggable: true,
+            dropOffBoard: 'snapback',
+            position: 'start'
+        });
     </script>
 </body>
 </html>
-
