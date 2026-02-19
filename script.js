@@ -130,7 +130,9 @@ newChatBtn.addEventListener("click", () => {
 const chessBtn = document.getElementById("chessBtn");
 const chessContainer = document.getElementById("chessContainer");
 
-// Mostrar u ocultar tablero al presionar el botón
+let tablero = []; // guardará el estado de cada celda
+let seleccion = null; // para mover piezas
+
 chessBtn.addEventListener("click", () => {
     if(chessContainer.style.display === "none") {
         chessContainer.style.display = "block";
@@ -140,25 +142,72 @@ chessBtn.addEventListener("click", () => {
     }
 });
 
-// Función para crear tablero simple 8x8
 function iniciarTablero() {
-    chessContainer.innerHTML = ""; // limpiar contenedor
+    chessContainer.innerHTML = "";
+    tablero = [];
     const table = document.createElement("table");
     table.style.borderCollapse = "collapse";
     table.style.marginTop = "15px";
-    for(let i=0; i<8; i++){
+
+    for(let i=0;i<8;i++){
+        const fila = [];
         const tr = document.createElement("tr");
-        for(let j=0; j<8; j++){
+        for(let j=0;j<8;j++){
             const td = document.createElement("td");
             td.style.width = "50px";
             td.style.height = "50px";
             td.style.textAlign = "center";
             td.style.verticalAlign = "middle";
             td.style.cursor = "pointer";
-            td.style.backgroundColor = (i+j)%2===0 ? "#f0d9b5" : "#b58863"; // colores de tablero
+            td.style.backgroundColor = (i+j)%2===0 ? "#f0d9b5" : "#b58863";
+            td.dataset.row = i;
+            td.dataset.col = j;
+
+            // click para seleccionar y mover piezas
+            td.addEventListener("click", () => moverPieza(i,j,td));
+
             tr.appendChild(td);
+            fila.push(null); // vacío por ahora
         }
         table.appendChild(tr);
+        tablero.push(fila);
     }
+
+    // Inicializar piezas (solo peones para ejemplo)
+    for(let j=0;j<8;j++){
+        tablero[1][j] = "♟"; // peones negros
+        tablero[6][j] = "♙"; // peones blancos
+        table.rows[1].cells[j].textContent = "♟";
+        table.rows[6].cells[j].textContent = "♙";
+    }
+
     chessContainer.appendChild(table);
+}
+
+function moverPieza(row,col,td) {
+    if(seleccion === null) {
+        if(tablero[row][col] !== null){
+            seleccion = {row,col, pieza: tablero[row][col]};
+            td.style.outline = "3px solid orange"; // marca selección
+        }
+    } else {
+        // mover la pieza
+        tablero[seleccion.row][seleccion.col] = null;
+        td.textContent = seleccion.pieza;
+        td.style.outline = "none";
+        tablero[row][col] = seleccion.pieza;
+
+        // limpiar selección
+        const table = td.parentElement.parentElement;
+        for(let i=0;i<8;i++){
+            for(let j=0;j<8;j++){
+                table.rows[i].cells[j].style.outline = "none";
+            }
+        }
+
+        // guardar movimiento en historial
+        guardarHistorial("usuario", `Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
+
+        seleccion = null;
+    }
 }
