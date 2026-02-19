@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Rgmw</title>
+    <title>Rgmw - Interactivo</title>
     <style>
         body {
             background-color: black;
             color: #00ff00;
             font-family: "Courier New", monospace;
             text-align: center;
-            padding: 50px;
+            padding: 30px;
         }
 
         h1 {
@@ -23,56 +23,114 @@
             to { text-shadow: 0 0 30px #00ff00; }
         }
 
-        h2 {
-            font-size: 2em;
-            margin-top: 1.5em;
-        }
-
-        p {
-            font-size: 1.2em;
-            max-width: 700px;
-            margin: 0 auto 1em auto;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-top: 20px;
-            font-size: 1.1em;
-            color: #00ff00;
-            border: 2px solid #00ff00;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #00ff00;
-            color: black;
-        }
-
         .avatar {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             margin-bottom: 20px;
         }
+
+        #chatBox {
+            width: 80%;
+            max-width: 600px;
+            height: 300px;
+            background-color: #111;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            margin: 20px auto;
+            padding: 10px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        #userInput {
+            width: 70%;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1em;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            background-color: #111;
+            color: #00ff00;
+        }
+
+        #sendBtn {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            background-color: black;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #sendBtn:hover {
+            background-color: #00ff00;
+            color: black;
+        }
+
+        .message {
+            margin: 5px 0;
+        }
+
+        .userMsg {
+            color: #00ffff;
+        }
+
+        .rgmwMsg {
+            color: #ff00ff;
+        }
     </style>
 </head>
 <body>
     <img src="https://via.placeholder.com/150" alt="Avatar Rgmw" class="avatar">
     <h1>Rgmw</h1>
-    <p>Rgmw es una inteligencia artificial con personalidad de gato profesional, diseñada para interactuar, asistir y evolucionar como un asistente digital.</p>
+    <p>Interactúa con tu IA Rgmw en este chat simulado.</p>
 
-    <h2>Acerca de Rgmw</h2>
-    <p>Rgmw es un asistente digital con identidad única, inspirado en la personalidad de un gato profesional. Este proyecto tiene como objetivo crear una inteligencia artificial que pueda ayudar, interactuar y mejorar progresivamente.</p>
+    <div id="chatBox"></div>
 
-    <h2>Estado del proyecto</h2>
-    <p>Actualmente en desarrollo. Se busca que Rgmw sea accesible desde la web y futuras aplicaciones, incorporando interacciones inteligentes, ajedrez, y más funciones.</p>
+    <input type="text" id="userInput" placeholder="Escribe tu mensaje...">
+    <button id="sendBtn">Enviar</button>
 
-    <h2>Futuras funciones</h2>
-    <p>Interacciones en tiempo real, juego de ajedrez integrado, voz y respuestas inteligentes, integración con otras aplicaciones y evolución progresiva de la IA.</p>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-    <a class="btn" href="README.md" target="_blank">Ver README.md</a>
+        function addMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message');
+            msgDiv.classList.add(sender === 'user' ? 'userMsg' : 'rgmwMsg');
+            msgDiv.textContent = `${sender === 'user' ? 'Tú' : 'Rgmw'}: ${text}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getRgmwResponse(msg) {
+            // Respuestas simples por ahora
+            msg = msg.toLowerCase();
+            if (msg.includes('hola')) return '¡Hola! 😸 ¿Cómo estás?';
+            if (msg.includes('ajedrez')) return 'Podemos jugar una partida de ajedrez más adelante.';
+            if (msg.includes('quién eres')) return 'Soy Rgmw, tu IA con personalidad de gato profesional.';
+            return 'Interesante... Cuéntame más.';
+        }
+
+        sendBtn.addEventListener('click', () => {
+            const message = userInput.value.trim();
+            if (!message) return;
+            addMessage('user', message);
+            setTimeout(() => {
+                addMessage('rgmw', getRgmwResponse(message));
+            }, 500);
+            userInput.value = '';
+            userInput.focus();
+        });
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+    </script>
 </body>
 </html>
+
