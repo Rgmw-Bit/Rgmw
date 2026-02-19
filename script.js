@@ -169,7 +169,7 @@ function iniciarTablero() {
             td.addEventListener("click", () => moverPieza(i,j,td));
 
             tr.appendChild(td);
-            fila.push(null); // vacío
+            fila.push(null);
         }
         table.appendChild(tr);
         tablero.push(fila);
@@ -191,6 +191,33 @@ function iniciarTablero() {
     chessContainer.appendChild(table);
 }
 
+// Función para validar movimientos según tipo de pieza
+function movimientoValido(pieza, fromRow, fromCol, toRow, toCol) {
+    const difRow = toRow - fromRow;
+    const difCol = toCol - fromCol;
+
+    switch(pieza){
+        case "♙":
+            return (difRow === -1 && difCol === 0 && tablero[toRow][toCol] === null) || 
+                   (difRow === -1 && Math.abs(difCol) === 1 && tablero[toRow][toCol] && tablero[toRow][toCol] === tablero[toRow][toCol].toUpperCase());
+        case "♟":
+            return (difRow === 1 && difCol === 0 && tablero[toRow][toCol] === null) ||
+                   (difRow === 1 && Math.abs(difCol) === 1 && tablero[toRow][toCol] && tablero[toRow][toCol] === tablero[toRow][toCol].toLowerCase());
+        case "♖": case "♜":
+            return (difRow === 0 || difCol === 0);
+        case "♘": case "♞":
+            return (Math.abs(difRow) === 2 && Math.abs(difCol) === 1) || (Math.abs(difRow) === 1 && Math.abs(difCol) === 2);
+        case "♗": case "♝":
+            return Math.abs(difRow) === Math.abs(difCol);
+        case "♕": case "♛":
+            return (difRow === 0 || difCol === 0) || (Math.abs(difRow) === Math.abs(difCol));
+        case "♔": case "♚":
+            return Math.abs(difRow) <= 1 && Math.abs(difCol) <= 1;
+        default:
+            return false;
+    }
+}
+
 function moverPieza(row,col,td) {
     if(seleccion === null) {
         if(tablero[row][col] !== null){
@@ -198,12 +225,11 @@ function moverPieza(row,col,td) {
             td.style.outline = "3px solid orange";
         }
     } else {
-        if(tablero[row][col] === null || tablero[row][col] !== seleccion.pieza){
+        if(movimientoValido(seleccion.pieza, seleccion.row, seleccion.col, row, col)){
             tablero[seleccion.row][seleccion.col] = null;
             td.textContent = seleccion.pieza;
             tablero[row][col] = seleccion.pieza;
 
-            // limpiar selección visual
             const table = td.parentElement.parentElement;
             for(let i=0;i<8;i++){
                 for(let j=0;j<8;j++){
@@ -211,10 +237,8 @@ function moverPieza(row,col,td) {
                 }
             }
 
-            // guardar movimiento en historial
             guardarHistorial("usuario", `Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
 
-            // comentario gatuno
             const comentarios = [
                 "Miau 😼… buen movimiento",
                 "Hmm 😺… veo tu estrategia",
@@ -225,6 +249,9 @@ function moverPieza(row,col,td) {
             addMessage("rgmw", randomComentario);
             guardarHistorial("rgmw", randomComentario);
 
+            seleccion = null;
+        }else{
+            addMessage("rgmw", "😼 Eso no es un movimiento válido para esa pieza.");
             seleccion = null;
         }
     }
