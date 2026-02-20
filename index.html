@@ -7,21 +7,32 @@
 </head>
 <body>
 
-<h1>Rgmw</h1>
+<header>
+    <h1>Rgmw</h1>
+    <p>Tu asistente IA con personalidad de gato profesional 😼</p>
+</header>
 
-<!-- Caja donde aparecen los mensajes -->
-<div id="chatBox"></div>
+<main>
+    <!-- Caja donde aparecen los mensajes -->
+    <div id="chatBox"></div>
 
-<!-- Input y botones -->
-<input type="text" id="userInput" placeholder="Escribe tu mensaje...">
-<button id="sendBtn">Enviar</button>
-<button id="newChatBtn">Nuevo Chat</button>
+    <!-- Input y botones -->
+    <div id="inputArea">
+        <input type="text" id="userInput" placeholder="Escribe tu mensaje...">
+        <button id="sendBtn">Enviar</button>
+        <button id="newChatBtn">Nuevo Chat</button>
+        <button id="chessBtn">Jugar Ajedrez</button>
+    </div>
 
-<!-- NUEVO: botón para abrir tablero de ajedrez -->
-<button id="chessBtn">Jugar Ajedrez</button>
-<div id="chessContainer" style="display:none;"></div>
+    <!-- Contenedor de ajedrez -->
+    <div id="chessContainer" style="display:none;"></div>
+</main>
 
-<!-- Lógica de chat -->
+<footer>
+    <p>Rgmw IA © 2026</p>
+</footer>
+
+<!-- Lógica de chat y ajedrez -->
 <script src="script.js"></script>
 
 </body>
