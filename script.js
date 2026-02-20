@@ -1,299 +1,190 @@
+// ================================
+// Rgmw IA — Script Completo con cerebro real
+// ================================
+
 // Elementos del DOM
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const newChatBtn = document.getElementById("newChatBtn");
-const chessBtn = document.getElementById("chessBtn");
-const chessContainer = document.getElementById("chessContainer");
 
-// 1️⃣ Comprobar si el usuario es nuevo o recurrente
-if(!localStorage.getItem("usuarioExperiencia")) {
-    localStorage.setItem("usuarioExperiencia", "nuevo");
-} else {
-    localStorage.setItem("usuarioExperiencia", "recurrente");
-}
-
-// 2️⃣ Crear historial de mensajes si no existe
-if(!localStorage.getItem("historialRgmw")) {
+// ================================
+// Memoria básica
+// ================================
+if(!localStorage.getItem("historialRgmw")){
     localStorage.setItem("historialRgmw", JSON.stringify([]));
 }
 
-// 3️⃣ Función para guardar mensajes en historial
-function guardarHistorial(usuario, mensaje) {
+function guardarHistorial(usuario, mensaje){
     const historial = JSON.parse(localStorage.getItem("historialRgmw"));
     historial.push({usuario, mensaje, fecha: new Date()});
     localStorage.setItem("historialRgmw", JSON.stringify(historial));
 }
 
-// 4️⃣ Array de saludos gatunos y con personalidad
-const saludos = [
-    "Hola, soy Rgmw 😼. ¿Listo para charlar un rato?",
-    "Miau 😸… soy Rgmw, tu asistente felino y curioso.",
-    "¡Hey! Soy Rgmw 😼. Prepárate para un chat interesante.",
-    "Saludos humanos 🐾, soy Rgmw y estoy atento a tus movimientos.",
-    "Hola 😺… Rgmw al habla, listo para analizar tus ideas y jugar un poco."
-];
+// ================================
+// Mostrar mensajes
+// ================================
+function addMessage(sender, text){
 
-// 5️⃣ Función para analizar comportamiento del usuario
-function analizarComportamiento(msg) {
-    msg = msg.toLowerCase();
-    if(msg.includes("jugar") || msg.includes("ajedrez") || msg.includes("divertido")) return "jugueton";
-    if(msg.includes("problema") || msg.includes("analizar")) return "analitico";
-    if(msg.includes("hola") || msg.includes("hey")) return "amistoso";
-    return "neutral";
-}
-
-// 6️⃣ Saludos adaptativos según historial y comportamiento
-function saludoAdaptativo() {
-    const historial = JSON.parse(localStorage.getItem("historialRgmw"));
-    let saludo = "";
-
-    if(historial.length === 0) {
-        saludo = "Hola, soy Rgmw 😼. Listo para charlar un rato.";
-    } else {
-        const ultimo = historial[historial.length - 1].mensaje;
-        const comportamiento = analizarComportamiento(ultimo);
-
-        switch(comportamiento){
-            case "jugueton":
-                saludo = "Miau 😸… ¡veo que quieres jugar o divertirte!";
-                break;
-            case "analitico":
-                saludo = "Hmm 😼… listo para analizar tus ideas conmigo.";
-                break;
-            case "amistoso":
-                saludo = "¡Hola de nuevo! 😺 Qué gusto verte charlar otra vez.";
-                break;
-            default:
-                saludo = "Hola 😼… ¿qué tal hoy?";
-        }
-    }
-    return saludo;
-}
-
-// 7️⃣ Función para agregar mensajes al chat
-function addMessage(sender, text) {
     const div = document.createElement("div");
-    div.classList.add(sender === "user" ? "userMsg" : "rgmwMsg");
-    div.textContent = `${sender === "user" ? "Tú" : "Rgmw"}: ${text}`;
+
+    if(sender === "user"){
+        div.className = "userMsg";
+        div.textContent = "Tú: " + text;
+    }else{
+        div.className = "rgmwMsg";
+        div.textContent = "Rgmw: " + text;
+    }
+
     chatBox.appendChild(div);
+
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 8️⃣ Función para buscar información resumida en Wikipedia
-async function buscarWikipedia(tema) {
-    try {
-        const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(tema)}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if(data.extract) return data.extract;
-        return "😿 No encontré información sobre eso.";
-    } catch(e) {
-        return "😿 Ocurrió un error al buscar información.";
-    }
-}
+// ================================
+// Saludo inicial
+// ================================
+addMessage("rgmw","Hola. Soy Rgmw 😼. Estoy listo para ayudarte.");
 
-// 9️⃣ Función de respuesta con “razonamiento”
-async function getRgmwResponse(msg) {
+// ================================
+// Detectar tipo de mensaje
+// ================================
+function esPregunta(msg){
+
     msg = msg.toLowerCase();
 
-    // Conversación normal
-    if(msg.includes("hola")) return "¡Hola! 😸 Listo para conversar.";
-    if(msg.includes("quién eres")) return "Soy Rgmw, tu IA con personalidad de gato profesional.";
-    if(msg.includes("cómo estás")) return "😼 Estoy listo para pensar contigo.";
-
-    // Detectar preguntas
-    const palabrasClave = ["quién", "qué", "cuándo", "dónde", "cómo"];
-    if(palabrasClave.some(p => msg.includes(p))){
-        return await buscarWikipedia(msg);
-    }
-
-    // Respuestas gatunas simuladas
-    const responses = [
-        "Interesante... cuéntame más 😼",
-        "¡Ja! Eso me hace pensar",
-        "Hmm… déjame analizar eso...",
-        "¡Claro! Continuemos",
-        "¿Quieres hablar de ajedrez o de otra cosa?"
+    const palabrasPregunta = [
+        "que",
+        "quien",
+        "cuando",
+        "donde",
+        "por que",
+        "como",
+        "cuanto",
+        "cual"
     ];
-    return responses[Math.floor(Math.random() * responses.length)];
-}
 
-// 🔟 Mostrar saludo inicial
-addMessage("rgmw", saludoAdaptativo());
-
-// 1️⃣1️⃣ Botón enviar
-sendBtn.addEventListener("click", async () => {
-    const message = userInput.value.trim();
-    if(!message) return;
-    addMessage("user", message);
-    guardarHistorial("usuario", message);
-
-    const respuesta = await getRgmwResponse(message);
-    addMessage("rgmw", respuesta);
-    guardarHistorial("rgmw", respuesta);
-
-    userInput.value = "";
-    userInput.focus();
-});
-
-// 1️⃣2️⃣ Enviar con Enter
-userInput.addEventListener("keydown", e => { if(e.key==="Enter") sendBtn.click(); });
-
-// 1️⃣3️⃣ Botón Nuevo Chat
-newChatBtn.addEventListener("click", () => {
-    chatBox.innerHTML = "";
-    addMessage("rgmw", "Nuevo chat iniciado. " + saludoAdaptativo());
-});
-
-// 1️⃣4️⃣ Elementos para ajedrez
-let tablero = [];
-let seleccion = null;
-
-chessBtn.addEventListener("click", () => {
-    if(chessContainer.style.display === "none") {
-        chessContainer.style.display = "block";
-        iniciarTablero();
-    } else {
-        chessContainer.style.display = "none";
-    }
-});
-
-function iniciarTablero() {
-    chessContainer.innerHTML = "";
-    tablero = [];
-    const table = document.createElement("table");
-    table.style.borderCollapse = "collapse";
-    table.style.marginTop = "15px";
-
-    const piezasBlancas = ["♖","♘","♗","♕","♔","♗","♘","♖"];
-    const piezasNegras = ["♜","♞","♝","♛","♚","♝","♞","♜"];
-
-    for(let i=0;i<8;i++){
-        const fila = [];
-        const tr = document.createElement("tr");
-        for(let j=0;j<8;j++){
-            const td = document.createElement("td");
-            td.style.width="50px";
-            td.style.height="50px";
-            td.style.textAlign="center";
-            td.style.verticalAlign="middle";
-            td.style.cursor="pointer";
-            td.style.backgroundColor = (i+j)%2===0?"#f0d9b5":"#b58863";
-            td.dataset.row = i;
-            td.dataset.col = j;
-
-            td.addEventListener("click",()=>moverPieza(i,j,td));
-
-            tr.appendChild(td);
-            fila.push(null);
-        }
-        table.appendChild(tr);
-        tablero.push(fila);
-    }
-
-    // Inicializar piezas
-    for(let j=0;j<8;j++){
-        tablero[0][j] = piezasNegras[j];
-        tablero[1][j] = "♟";
-        tablero[6][j] = "♙";
-        tablero[7][j] = piezasBlancas[j];
-
-        table.rows[0].cells[j].textContent = piezasNegras[j];
-        table.rows[1].cells[j].textContent = "♟";
-        table.rows[6].cells[j].textContent = "♙";
-        table.rows[7].cells[j].textContent = piezasBlancas[j];
-    }
-    chessContainer.appendChild(table);
-}
-
-// Validación de movimientos
-function movimientoValido(pieza, fromRow, fromCol, toRow, toCol){
-    const difRow = toRow - fromRow;
-    const difCol = toCol - fromCol;
-
-    switch(pieza){
-        case "♙": return (difRow===-1 && difCol===0 && tablero[toRow][toCol]===null) || 
-                           (difRow===-1 && Math.abs(difCol)===1 && tablero[toRow][toCol] && tablero[toRow][toCol]===tablero[toRow][toCol].toUpperCase());
-        case "♟": return (difRow===1 && difCol===0 && tablero[toRow][toCol]===null) ||
-                           (difRow===1 && Math.abs(difCol)===1 && tablero[toRow][toCol] && tablero[toRow][toCol]===tablero[toRow][toCol].toLowerCase());
-        case "♖": case "♜": return (difRow===0 || difCol===0);
-        case "♘": case "♞": return (Math.abs(difRow)===2 && Math.abs(difCol)===1)||(Math.abs(difRow)===1 && Math.abs(difCol)===2);
-        case "♗": case "♝": return Math.abs(difRow)===Math.abs(difCol);
-        case "♕": case "♛": return (difRow===0 || difCol===0)||(Math.abs(difRow)===Math.abs(difCol));
-        case "♔": case "♚": return Math.abs(difRow)<=1 && Math.abs(difCol)<=1;
-        default: return false;
-    }
-}
-
-// Detectar jaque
-function estaEnJaque(color){
-    let rey = color==="blanco"?"♔":"♚";
-    let reyPos = null;
-
-    for(let i=0;i<8;i++){
-        for(let j=0;j<8;j++){
-            if(tablero[i][j]===rey){
-                reyPos={row:i,col:j};
-                break;
-            }
-        }
-        if(reyPos) break;
-    }
-
-    for(let i=0;i<8;i++){
-        for(let j=0;j<8;j++){
-            const pieza = tablero[i][j];
-            if(!pieza) continue;
-            if((color==="blanco" && pieza===pieza.toUpperCase())||(color==="negro" && pieza===pieza.toLowerCase())){
-                if(movimientoValido(pieza,i,j,reyPos.row,reyPos.col)) return true;
-            }
+    for(let palabra of palabrasPregunta){
+        if(msg.includes(palabra)){
+            return true;
         }
     }
+
     return false;
 }
 
-// Mover piezas con jaque y comentarios gatunos
-function moverPieza(row,col,td){
-    if(seleccion===null){
-        if(tablero[row][col]!==null){
-            seleccion={row,col,pieza:tablero[row][col]};
-            td.style.outline="3px solid orange";
+// ================================
+// Cerebro real — buscar en Wikipedia
+// ================================
+async function buscarWikipedia(consulta){
+
+    try{
+
+        const url =
+        "https://es.wikipedia.org/api/rest_v1/page/summary/" +
+        encodeURIComponent(consulta);
+
+        const respuesta = await fetch(url);
+
+        if(!respuesta.ok){
+            return null;
         }
-    }else{
-        if(movimientoValido(seleccion.pieza,seleccion.row,seleccion.col,row,col)){
-            tablero[seleccion.row][seleccion.col]=null;
-            td.textContent=seleccion.pieza;
-            tablero[row][col]=seleccion.pieza;
 
-            const table = td.parentElement.parentElement;
-            for(let i=0;i<8;i++){
-                for(let j=0;j<8;j++){
-                    table.rows[i].cells[j].style.outline="none";
-                }
-            }
+        const data = await respuesta.json();
 
-            guardarHistorial("usuario",`Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
-
-            const comentarios=[
-                "Miau 😼… buen movimiento",
-                "Hmm 😺… veo tu estrategia",
-                "Ja! 😸 interesante jugada",
-                "😼 Hmm… eso me hace pensar"
-            ];
-            const randomComentario = comentarios[Math.floor(Math.random()*comentarios.length)];
-            addMessage("rgmw",randomComentario);
-            guardarHistorial("rgmw",randomComentario);
-
-            const colorRey = seleccion.pieza===seleccion.pieza.toUpperCase()?"blanco":"negro";
-            if(estaEnJaque(colorRey==="blanco"?"negro":"blanco")){
-                addMessage("rgmw","😼 Atención… ¡jaque!");
-            }
-
-            seleccion=null;
-        }else{
-            addMessage("rgmw","😼 Eso no es un movimiento válido para esa pieza.");
-            seleccion=null;
+        if(data.extract){
+            return data.extract;
         }
+
+        return null;
+
+    }catch(error){
+
+        return null;
+
     }
 }
+
+// ================================
+// Generar respuesta inteligente
+// ================================
+async function generarRespuesta(msg){
+
+    msg = msg.toLowerCase();
+
+    // respuestas básicas
+    if(msg === "hola"){
+        return "Hola 😸";
+    }
+
+    if(msg === "como estas"){
+        return "Funcionando correctamente.";
+    }
+
+    if(msg === "2+2"){
+        return "2 + 2 = 4";
+    }
+
+    // si es pregunta → investigar
+    if(esPregunta(msg)){
+
+        addMessage("rgmw","Investigando...");
+
+        const info = await buscarWikipedia(msg);
+
+        if(info){
+            return info;
+        }else{
+            return "No encontré información suficiente.";
+        }
+
+    }
+
+    // respuesta por defecto
+    return "Entendido.";
+}
+
+// ================================
+// Enviar mensaje
+// ================================
+sendBtn.addEventListener("click", async ()=>{
+
+    const mensaje = userInput.value.trim();
+
+    if(mensaje === "") return;
+
+    addMessage("user",mensaje);
+
+    guardarHistorial("usuario",mensaje);
+
+    userInput.value = "";
+
+    const respuesta = await generarRespuesta(mensaje);
+
+    addMessage("rgmw",respuesta);
+
+    guardarHistorial("rgmw",respuesta);
+
+});
+
+// ================================
+// Enter para enviar
+// ================================
+userInput.addEventListener("keydown", function(e){
+
+    if(e.key === "Enter"){
+        sendBtn.click();
+    }
+
+});
+
+// ================================
+// Nuevo chat
+// ================================
+newChatBtn.addEventListener("click", ()=>{
+
+    chatBox.innerHTML = "";
+
+    addMessage("rgmw","Nuevo chat iniciado.");
+
+});
