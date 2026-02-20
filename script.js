@@ -3,9 +3,7 @@
 // Chat + Cerebro + Ajedrez
 // ================================
 
-// ================================
 // ELEMENTOS DOM
-// ================================
 
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
@@ -16,9 +14,7 @@ const chessBtn = document.getElementById("chessBtn");
 const chessContainer = document.getElementById("chessContainer");
 
 
-// ================================
 // MEMORIA
-// ================================
 
 if(!localStorage.getItem("historialRgmw")){
     localStorage.setItem("historialRgmw", JSON.stringify([]));
@@ -42,9 +38,7 @@ function guardarHistorial(usuario,mensaje){
 }
 
 
-// ================================
 // MOSTRAR MENSAJES
-// ================================
 
 function addMessage(sender,text){
 
@@ -66,16 +60,12 @@ function addMessage(sender,text){
 }
 
 
-// ================================
 // SALUDO
-// ================================
 
 addMessage("rgmw",
 "Hola. Soy Rgmw 😼");
 
-// ================================
 // DETECTAR PREGUNTAS
-// ================================
 
 function esPregunta(msg){
 
@@ -100,9 +90,7 @@ function esPregunta(msg){
 }
 
 
-// ================================
 // BUSCAR WIKIPEDIA
-// ================================
 
 async function buscarWikipedia(consulta){
 
@@ -129,9 +117,7 @@ async function buscarWikipedia(consulta){
 }
 
 
-// ================================
 // GENERAR RESPUESTA
-// ================================
 
 async function generarRespuesta(msg){
 
@@ -163,9 +149,7 @@ async function generarRespuesta(msg){
 }
 
 
-// ================================
 // ENVIAR MENSAJE
-// ================================
 
 sendBtn.onclick=async()=>{
 
@@ -198,9 +182,7 @@ userInput.onkeydown=(e)=>{
 };
 
 
-// ================================
 // NUEVO CHAT
-// ================================
 
 newChatBtn.onclick=()=>{
 
@@ -212,9 +194,7 @@ newChatBtn.onclick=()=>{
 };
 
 
-// ================================
 // AJEDREZ
-// ================================
 
 let tablero=[];
 let seleccion=null;
