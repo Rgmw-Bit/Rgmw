@@ -3,6 +3,8 @@ const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const newChatBtn = document.getElementById("newChatBtn");
+const chessBtn = document.getElementById("chessBtn");
+const chessContainer = document.getElementById("chessContainer");
 
 // 1️⃣ Comprobar si el usuario es nuevo o recurrente
 if(!localStorage.getItem("usuarioExperiencia")) {
@@ -35,16 +37,10 @@ const saludos = [
 // 5️⃣ Función para analizar comportamiento del usuario
 function analizarComportamiento(msg) {
     msg = msg.toLowerCase();
-    if(msg.includes("jugar") || msg.includes("ajedrez") || msg.includes("divertido")) {
-        return "jugueton"; 
-    }
-    if(msg.includes("problema") || msg.includes("analizar")) {
-        return "analitico"; 
-    }
-    if(msg.includes("hola") || msg.includes("hey")) {
-        return "amistoso"; 
-    }
-    return "neutral"; 
+    if(msg.includes("jugar") || msg.includes("ajedrez") || msg.includes("divertido")) return "jugueton";
+    if(msg.includes("problema") || msg.includes("analizar")) return "analitico";
+    if(msg.includes("hola") || msg.includes("hey")) return "amistoso";
+    return "neutral";
 }
 
 // 6️⃣ Saludos adaptativos según historial y comportamiento
@@ -58,7 +54,7 @@ function saludoAdaptativo() {
         const ultimo = historial[historial.length - 1].mensaje;
         const comportamiento = analizarComportamiento(ultimo);
 
-        switch(comportamiento) {
+        switch(comportamiento){
             case "jugueton":
                 saludo = "Miau 😸… ¡veo que quieres jugar o divertirte!";
                 break;
@@ -72,7 +68,6 @@ function saludoAdaptativo() {
                 saludo = "Hola 😼… ¿qué tal hoy?";
         }
     }
-
     return saludo;
 }
 
@@ -85,9 +80,35 @@ function addMessage(sender, text) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 8️⃣ Función para generar respuestas simuladas
-function getRgmwResponse(msg) {
+// 8️⃣ Función para buscar información resumida en Wikipedia
+async function buscarWikipedia(tema) {
+    try {
+        const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(tema)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if(data.extract) return data.extract;
+        return "😿 No encontré información sobre eso.";
+    } catch(e) {
+        return "😿 Ocurrió un error al buscar información.";
+    }
+}
+
+// 9️⃣ Función de respuesta con “razonamiento”
+async function getRgmwResponse(msg) {
     msg = msg.toLowerCase();
+
+    // Conversación normal
+    if(msg.includes("hola")) return "¡Hola! 😸 Listo para conversar.";
+    if(msg.includes("quién eres")) return "Soy Rgmw, tu IA con personalidad de gato profesional.";
+    if(msg.includes("cómo estás")) return "😼 Estoy listo para pensar contigo.";
+
+    // Detectar preguntas
+    const palabrasClave = ["quién", "qué", "cuándo", "dónde", "cómo"];
+    if(palabrasClave.some(p => msg.includes(p))){
+        return await buscarWikipedia(msg);
+    }
+
+    // Respuestas gatunas simuladas
     const responses = [
         "Interesante... cuéntame más 😼",
         "¡Ja! Eso me hace pensar",
@@ -95,44 +116,39 @@ function getRgmwResponse(msg) {
         "¡Claro! Continuemos",
         "¿Quieres hablar de ajedrez o de otra cosa?"
     ];
-    if(msg.includes("hola")) return "¡Hola! 😸 Listo para conversar.";
-    if(msg.includes("quién eres")) return "Soy Rgmw, tu IA con personalidad de gato profesional.";
     return responses[Math.floor(Math.random() * responses.length)];
 }
 
-// 9️⃣ Mostrar saludo inicial al cargar
+// 🔟 Mostrar saludo inicial
 addMessage("rgmw", saludoAdaptativo());
 
-// 🔟 Botón enviar
-sendBtn.addEventListener("click", () => {
+// 1️⃣1️⃣ Botón enviar
+sendBtn.addEventListener("click", async () => {
     const message = userInput.value.trim();
-    if (!message) return;
+    if(!message) return;
     addMessage("user", message);
     guardarHistorial("usuario", message);
-    setTimeout(() => {
-        const respuesta = getRgmwResponse(message);
-        addMessage("rgmw", respuesta);
-        guardarHistorial("rgmw", respuesta);
-    }, 500);
+
+    const respuesta = await getRgmwResponse(message);
+    addMessage("rgmw", respuesta);
+    guardarHistorial("rgmw", respuesta);
+
     userInput.value = "";
     userInput.focus();
 });
 
-// 1️⃣1️⃣ Enviar con Enter
-userInput.addEventListener("keydown", e => { if(e.key === "Enter") sendBtn.click(); });
+// 1️⃣2️⃣ Enviar con Enter
+userInput.addEventListener("keydown", e => { if(e.key==="Enter") sendBtn.click(); });
 
-// 1️⃣2️⃣ Botón Nuevo Chat
+// 1️⃣3️⃣ Botón Nuevo Chat
 newChatBtn.addEventListener("click", () => {
     chatBox.innerHTML = "";
     addMessage("rgmw", "Nuevo chat iniciado. " + saludoAdaptativo());
 });
 
-// 1️⃣3️⃣ Elementos para ajedrez
-const chessBtn = document.getElementById("chessBtn");
-const chessContainer = document.getElementById("chessContainer");
-
-let tablero = []; // guarda el estado del tablero
-let seleccion = null; // para mover piezas
+// 1️⃣4️⃣ Elementos para ajedrez
+let tablero = [];
+let seleccion = null;
 
 chessBtn.addEventListener("click", () => {
     if(chessContainer.style.display === "none") {
@@ -158,16 +174,16 @@ function iniciarTablero() {
         const tr = document.createElement("tr");
         for(let j=0;j<8;j++){
             const td = document.createElement("td");
-            td.style.width = "50px";
-            td.style.height = "50px";
-            td.style.textAlign = "center";
-            td.style.verticalAlign = "middle";
-            td.style.cursor = "pointer";
-            td.style.backgroundColor = (i+j)%2===0 ? "#f0d9b5" : "#b58863";
+            td.style.width="50px";
+            td.style.height="50px";
+            td.style.textAlign="center";
+            td.style.verticalAlign="middle";
+            td.style.cursor="pointer";
+            td.style.backgroundColor = (i+j)%2===0?"#f0d9b5":"#b58863";
             td.dataset.row = i;
             td.dataset.col = j;
 
-            td.addEventListener("click", () => moverPieza(i,j,td));
+            td.addEventListener("click",()=>moverPieza(i,j,td));
 
             tr.appendChild(td);
             fila.push(null);
@@ -188,46 +204,37 @@ function iniciarTablero() {
         table.rows[6].cells[j].textContent = "♙";
         table.rows[7].cells[j].textContent = piezasBlancas[j];
     }
-
     chessContainer.appendChild(table);
 }
 
 // Validación de movimientos
-function movimientoValido(pieza, fromRow, fromCol, toRow, toCol) {
+function movimientoValido(pieza, fromRow, fromCol, toRow, toCol){
     const difRow = toRow - fromRow;
     const difCol = toCol - fromCol;
 
     switch(pieza){
-        case "♙":
-            return (difRow === -1 && difCol === 0 && tablero[toRow][toCol] === null) || 
-                   (difRow === -1 && Math.abs(difCol) === 1 && tablero[toRow][toCol] && tablero[toRow][toCol] === tablero[toRow][toCol].toUpperCase());
-        case "♟":
-            return (difRow === 1 && difCol === 0 && tablero[toRow][toCol] === null) ||
-                   (difRow === 1 && Math.abs(difCol) === 1 && tablero[toRow][toCol] && tablero[toRow][toCol] === tablero[toRow][toCol].toLowerCase());
-        case "♖": case "♜":
-            return (difRow === 0 || difCol === 0);
-        case "♘": case "♞":
-            return (Math.abs(difRow) === 2 && Math.abs(difCol) === 1) || (Math.abs(difRow) === 1 && Math.abs(difCol) === 2);
-        case "♗": case "♝":
-            return Math.abs(difRow) === Math.abs(difCol);
-        case "♕": case "♛":
-            return (difRow === 0 || difCol === 0) || (Math.abs(difRow) === Math.abs(difCol));
-        case "♔": case "♚":
-            return Math.abs(difRow) <= 1 && Math.abs(difCol) <= 1;
-        default:
-            return false;
+        case "♙": return (difRow===-1 && difCol===0 && tablero[toRow][toCol]===null) || 
+                           (difRow===-1 && Math.abs(difCol)===1 && tablero[toRow][toCol] && tablero[toRow][toCol]===tablero[toRow][toCol].toUpperCase());
+        case "♟": return (difRow===1 && difCol===0 && tablero[toRow][toCol]===null) ||
+                           (difRow===1 && Math.abs(difCol)===1 && tablero[toRow][toCol] && tablero[toRow][toCol]===tablero[toRow][toCol].toLowerCase());
+        case "♖": case "♜": return (difRow===0 || difCol===0);
+        case "♘": case "♞": return (Math.abs(difRow)===2 && Math.abs(difCol)===1)||(Math.abs(difRow)===1 && Math.abs(difCol)===2);
+        case "♗": case "♝": return Math.abs(difRow)===Math.abs(difCol);
+        case "♕": case "♛": return (difRow===0 || difCol===0)||(Math.abs(difRow)===Math.abs(difCol));
+        case "♔": case "♚": return Math.abs(difRow)<=1 && Math.abs(difCol)<=1;
+        default: return false;
     }
 }
 
-// ✅ Función para detectar jaque
-function estaEnJaque(color) {
-    let rey = color === "blanco" ? "♔" : "♚";
+// Detectar jaque
+function estaEnJaque(color){
+    let rey = color==="blanco"?"♔":"♚";
     let reyPos = null;
 
     for(let i=0;i<8;i++){
         for(let j=0;j<8;j++){
-            if(tablero[i][j] === rey){
-                reyPos = {row:i, col:j};
+            if(tablero[i][j]===rey){
+                reyPos={row:i,col:j};
                 break;
             }
         }
@@ -238,59 +245,55 @@ function estaEnJaque(color) {
         for(let j=0;j<8;j++){
             const pieza = tablero[i][j];
             if(!pieza) continue;
-            if((color==="blanco" && pieza === pieza.toLowerCase()) || (color==="negro" && pieza === pieza.toUpperCase())){
-                if(movimientoValido(pieza, i, j, reyPos.row, reyPos.col)){
-                    return true;
-                }
+            if((color==="blanco" && pieza===pieza.toUpperCase())||(color==="negro" && pieza===pieza.toLowerCase())){
+                if(movimientoValido(pieza,i,j,reyPos.row,reyPos.col)) return true;
             }
         }
     }
-
     return false;
 }
 
-// moverPieza con jaque integrado
-function moverPieza(row,col,td) {
-    if(seleccion === null) {
-        if(tablero[row][col] !== null){
-            seleccion = {row,col, pieza: tablero[row][col]};
-            td.style.outline = "3px solid orange";
+// Mover piezas con jaque y comentarios gatunos
+function moverPieza(row,col,td){
+    if(seleccion===null){
+        if(tablero[row][col]!==null){
+            seleccion={row,col,pieza:tablero[row][col]};
+            td.style.outline="3px solid orange";
         }
-    } else {
-        if(movimientoValido(seleccion.pieza, seleccion.row, seleccion.col, row, col)){
-            tablero[seleccion.row][seleccion.col] = null;
-            td.textContent = seleccion.pieza;
-            tablero[row][col] = seleccion.pieza;
+    }else{
+        if(movimientoValido(seleccion.pieza,seleccion.row,seleccion.col,row,col)){
+            tablero[seleccion.row][seleccion.col]=null;
+            td.textContent=seleccion.pieza;
+            tablero[row][col]=seleccion.pieza;
 
             const table = td.parentElement.parentElement;
             for(let i=0;i<8;i++){
                 for(let j=0;j<8;j++){
-                    table.rows[i].cells[j].style.outline = "none";
+                    table.rows[i].cells[j].style.outline="none";
                 }
             }
 
-            guardarHistorial("usuario", `Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
+            guardarHistorial("usuario",`Movió ${seleccion.pieza} de (${seleccion.row+1},${seleccion.col+1}) a (${row+1},${col+1})`);
 
-            const comentarios = [
+            const comentarios=[
                 "Miau 😼… buen movimiento",
                 "Hmm 😺… veo tu estrategia",
                 "Ja! 😸 interesante jugada",
                 "😼 Hmm… eso me hace pensar"
             ];
             const randomComentario = comentarios[Math.floor(Math.random()*comentarios.length)];
-            addMessage("rgmw", randomComentario);
-            guardarHistorial("rgmw", randomComentario);
+            addMessage("rgmw",randomComentario);
+            guardarHistorial("rgmw",randomComentario);
 
-            // ✅ comprobar jaque
-            const colorRey = seleccion.pieza === seleccion.pieza.toUpperCase() ? "blanco" : "negro";
-            if(estaEnJaque(colorRey === "blanco" ? "negro" : "blanco")){
-                addMessage("rgmw", "😼 Atención… ¡jaque!");
+            const colorRey = seleccion.pieza===seleccion.pieza.toUpperCase()?"blanco":"negro";
+            if(estaEnJaque(colorRey==="blanco"?"negro":"blanco")){
+                addMessage("rgmw","😼 Atención… ¡jaque!");
             }
 
-            seleccion = null;
+            seleccion=null;
         }else{
-            addMessage("rgmw", "😼 Eso no es un movimiento válido para esa pieza.");
-            seleccion = null;
+            addMessage("rgmw","😼 Eso no es un movimiento válido para esa pieza.");
+            seleccion=null;
         }
     }
 }
