@@ -1,59 +1,85 @@
 // ================================
-// Rgmw IA — Script Completo con cerebro real
+// Rgmw IA Completa
+// Chat + Cerebro + Ajedrez
 // ================================
 
-// Elementos del DOM
+// ================================
+// ELEMENTOS DOM
+// ================================
+
 const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const newChatBtn = document.getElementById("newChatBtn");
 
+const chessBtn = document.getElementById("chessBtn");
+const chessContainer = document.getElementById("chessContainer");
+
+
 // ================================
-// Memoria básica
+// MEMORIA
 // ================================
+
 if(!localStorage.getItem("historialRgmw")){
     localStorage.setItem("historialRgmw", JSON.stringify([]));
 }
 
-function guardarHistorial(usuario, mensaje){
-    const historial = JSON.parse(localStorage.getItem("historialRgmw"));
-    historial.push({usuario, mensaje, fecha: new Date()});
-    localStorage.setItem("historialRgmw", JSON.stringify(historial));
+function guardarHistorial(usuario,mensaje){
+
+    const historial =
+    JSON.parse(localStorage.getItem("historialRgmw"));
+
+    historial.push({
+        usuario,
+        mensaje,
+        fecha:new Date()
+    });
+
+    localStorage.setItem(
+        "historialRgmw",
+        JSON.stringify(historial)
+    );
 }
 
-// ================================
-// Mostrar mensajes
-// ================================
-function addMessage(sender, text){
 
-    const div = document.createElement("div");
+// ================================
+// MOSTRAR MENSAJES
+// ================================
 
-    if(sender === "user"){
-        div.className = "userMsg";
-        div.textContent = "Tú: " + text;
+function addMessage(sender,text){
+
+    const div=document.createElement("div");
+
+    if(sender==="user"){
+        div.className="userMsg";
+        div.textContent="Tú: "+text;
     }else{
-        div.className = "rgmwMsg";
-        div.textContent = "Rgmw: " + text;
+        div.className="rgmwMsg";
+        div.textContent="Rgmw: "+text;
     }
 
     chatBox.appendChild(div);
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.scrollTop=
+    chatBox.scrollHeight;
+
 }
 
-// ================================
-// Saludo inicial
-// ================================
-addMessage("rgmw","Hola. Soy Rgmw 😼. Estoy listo para ayudarte.");
 
 // ================================
-// Detectar tipo de mensaje
+// SALUDO
 // ================================
+
+addMessage("rgmw",
+"Hola. Soy Rgmw 😼");
+
+// ================================
+// DETECTAR PREGUNTAS
+// ================================
+
 function esPregunta(msg){
 
-    msg = msg.toLowerCase();
-
-    const palabrasPregunta = [
+    const palabras=[
         "que",
         "quien",
         "cuando",
@@ -64,127 +90,312 @@ function esPregunta(msg){
         "cual"
     ];
 
-    for(let palabra of palabrasPregunta){
-        if(msg.includes(palabra)){
-            return true;
-        }
+    msg=msg.toLowerCase();
+
+    for(let p of palabras){
+        if(msg.includes(p)) return true;
     }
 
     return false;
 }
 
+
 // ================================
-// Cerebro real — buscar en Wikipedia
+// BUSCAR WIKIPEDIA
 // ================================
+
 async function buscarWikipedia(consulta){
 
     try{
 
-        const url =
-        "https://es.wikipedia.org/api/rest_v1/page/summary/" +
-        encodeURIComponent(consulta);
+        const url=
+        "https://es.wikipedia.org/api/rest_v1/page/summary/"
+        +encodeURIComponent(consulta);
 
-        const respuesta = await fetch(url);
+        const r=await fetch(url);
 
-        if(!respuesta.ok){
-            return null;
-        }
+        if(!r.ok) return null;
 
-        const data = await respuesta.json();
+        const data=await r.json();
 
-        if(data.extract){
-            return data.extract;
-        }
+        return data.extract;
 
-        return null;
-
-    }catch(error){
+    }catch{
 
         return null;
 
     }
+
 }
 
+
 // ================================
-// Generar respuesta inteligente
+// GENERAR RESPUESTA
 // ================================
+
 async function generarRespuesta(msg){
 
-    msg = msg.toLowerCase();
+    const lower=msg.toLowerCase();
 
-    // respuestas básicas
-    if(msg === "hola"){
+    if(lower==="hola")
         return "Hola 😸";
-    }
 
-    if(msg === "como estas"){
-        return "Funcionando correctamente.";
-    }
+    if(lower==="2+2")
+        return "4";
 
-    if(msg === "2+2"){
-        return "2 + 2 = 4";
-    }
+    if(esPregunta(lower)){
 
-    // si es pregunta → investigar
-    if(esPregunta(msg)){
+        addMessage("rgmw",
+        "Investigando...");
 
-        addMessage("rgmw","Investigando...");
+        const info=
+        await buscarWikipedia(msg);
 
-        const info = await buscarWikipedia(msg);
-
-        if(info){
+        if(info)
             return info;
-        }else{
-            return "No encontré información suficiente.";
-        }
+
+        return "No encontré información.";
 
     }
 
-    // respuesta por defecto
     return "Entendido.";
+
 }
 
-// ================================
-// Enviar mensaje
-// ================================
-sendBtn.addEventListener("click", async ()=>{
-
-    const mensaje = userInput.value.trim();
-
-    if(mensaje === "") return;
-
-    addMessage("user",mensaje);
-
-    guardarHistorial("usuario",mensaje);
-
-    userInput.value = "";
-
-    const respuesta = await generarRespuesta(mensaje);
-
-    addMessage("rgmw",respuesta);
-
-    guardarHistorial("rgmw",respuesta);
-
-});
 
 // ================================
-// Enter para enviar
+// ENVIAR MENSAJE
 // ================================
-userInput.addEventListener("keydown", function(e){
 
-    if(e.key === "Enter"){
+sendBtn.onclick=async()=>{
+
+    const msg=
+    userInput.value.trim();
+
+    if(!msg) return;
+
+    addMessage("user",msg);
+
+    guardarHistorial("user",msg);
+
+    userInput.value="";
+
+    const resp=
+    await generarRespuesta(msg);
+
+    addMessage("rgmw",resp);
+
+    guardarHistorial("rgmw",resp);
+
+};
+
+
+userInput.onkeydown=(e)=>{
+
+    if(e.key==="Enter")
         sendBtn.click();
+
+};
+
+
+// ================================
+// NUEVO CHAT
+// ================================
+
+newChatBtn.onclick=()=>{
+
+    chatBox.innerHTML="";
+
+    addMessage("rgmw",
+    "Nuevo chat.");
+
+};
+
+
+// ================================
+// AJEDREZ
+// ================================
+
+let tablero=[];
+let seleccion=null;
+
+
+chessBtn.onclick=()=>{
+
+    if(chessContainer.style.display==="none"){
+
+        chessContainer.style.display="block";
+
+        iniciarTablero();
+
+    }else{
+
+        chessContainer.style.display="none";
+
     }
 
-});
+};
 
-// ================================
-// Nuevo chat
-// ================================
-newChatBtn.addEventListener("click", ()=>{
 
-    chatBox.innerHTML = "";
+function iniciarTablero(){
 
-    addMessage("rgmw","Nuevo chat iniciado.");
+    chessContainer.innerHTML="";
 
-});
+    tablero=[];
+
+    const table=
+    document.createElement("table");
+
+    const blancas=
+    ["♖","♘","♗","♕","♔","♗","♘","♖"];
+
+    const negras=
+    ["♜","♞","♝","♛","♚","♝","♞","♜"];
+
+
+    for(let i=0;i<8;i++){
+
+        const fila=[];
+
+        const tr=
+        document.createElement("tr");
+
+        for(let j=0;j<8;j++){
+
+            const td=
+            document.createElement("td");
+
+            td.dataset.row=i;
+            td.dataset.col=j;
+
+            td.onclick=()=>
+            moverPieza(i,j,td);
+
+            tr.appendChild(td);
+
+            fila.push(null);
+
+        }
+
+        table.appendChild(tr);
+
+        tablero.push(fila);
+
+    }
+
+
+    for(let j=0;j<8;j++){
+
+        tablero[0][j]=negras[j];
+        tablero[1][j]="♟";
+
+        tablero[6][j]="♙";
+        tablero[7][j]=blancas[j];
+
+        table.rows[0].cells[j]
+        .textContent=negras[j];
+
+        table.rows[1].cells[j]
+        .textContent="♟";
+
+        table.rows[6].cells[j]
+        .textContent="♙";
+
+        table.rows[7].cells[j]
+        .textContent=blancas[j];
+
+    }
+
+    chessContainer.appendChild(table);
+
+}
+
+
+function movimientoValido(
+pieza,fr,fc,tr,tc){
+
+    const dr=tr-fr;
+    const dc=tc-fc;
+
+    switch(pieza){
+
+        case "♙":
+            return dr===-1&&dc===0;
+
+        case "♟":
+            return dr===1&&dc===0;
+
+        case "♖":case"♜":
+            return dr===0||dc===0;
+
+        case "♘":case"♞":
+            return(
+            Math.abs(dr)===2
+            &&Math.abs(dc)===1
+            ||
+            Math.abs(dr)===1
+            &&Math.abs(dc)===2
+            );
+
+        case "♗":case"♝":
+            return Math.abs(dr)===Math.abs(dc);
+
+        case "♕":case"♛":
+            return(
+            dr===0
+            ||dc===0
+            ||Math.abs(dr)
+            ===Math.abs(dc)
+            );
+
+        case "♔":case"♚":
+            return Math.abs(dr)<=1
+            &&Math.abs(dc)<=1;
+
+    }
+
+    return false;
+
+}
+
+
+function moverPieza(r,c,td){
+
+    if(seleccion==null){
+
+        if(tablero[r][c]){
+
+            seleccion={
+                r,c,
+                pieza:tablero[r][c]
+            };
+
+            td.style.outline=
+            "3px solid orange";
+
+        }
+
+    }else{
+
+        if(movimientoValido(
+        seleccion.pieza,
+        seleccion.r,
+        seleccion.c,
+        r,c)){
+
+            tablero[r][c]=
+            seleccion.pieza;
+
+            tablero[
+            seleccion.r]
+            [seleccion.c]=null;
+
+            iniciarTablero();
+
+        }
+
+        seleccion=null;
+
+    }
+
+}
