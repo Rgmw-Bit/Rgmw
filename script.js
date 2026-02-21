@@ -198,6 +198,7 @@ newChatBtn.onclick=()=>{
 
 let tablero=[];
 let seleccion=null;
+let table=null; // IMPORTANTE
 
 
 chessBtn.onclick=()=>{
@@ -223,8 +224,7 @@ function iniciarTablero(){
 
     tablero=[];
 
-    const table=
-    document.createElement("table");
+    table=document.createElement("table"); // IMPORTANTE
 
     const blancas=
     ["♖","♘","♗","♕","♔","♗","♘","♖"];
@@ -237,19 +237,17 @@ function iniciarTablero(){
 
         const fila=[];
 
-        const tr=
-        document.createElement("tr");
+        const tr=document.createElement("tr");
 
         for(let j=0;j<8;j++){
 
-            const td=
-            document.createElement("td");
+            const td=document.createElement("td");
 
             td.dataset.row=i;
             td.dataset.col=j;
 
             td.onclick=()=>
-            moverPieza(i,j,td);
+            moverPieza(i,j);
 
             tr.appendChild(td);
 
@@ -272,23 +270,36 @@ function iniciarTablero(){
         tablero[6][j]="♙";
         tablero[7][j]=blancas[j];
 
-        table.rows[0].cells[j]
-        .textContent=negras[j];
-
-        table.rows[1].cells[j]
-        .textContent="♟";
-
-        table.rows[6].cells[j]
-        .textContent="♙";
-
-        table.rows[7].cells[j]
-        .textContent=blancas[j];
-
     }
 
     chessContainer.appendChild(table);
 
+    actualizarTablero(); // IMPORTANTE
+
 }
+
+
+
+function actualizarTablero(){
+
+    for(let i=0;i<8;i++){
+
+        for(let j=0;j<8;j++){
+
+            const td=
+            table.rows[i].cells[j];
+
+            td.textContent=
+            tablero[i][j]||"";
+
+            td.style.outline="none";
+
+        }
+
+    }
+
+}
+
 
 
 function movimientoValido(
@@ -339,18 +350,21 @@ pieza,fr,fc,tr,tc){
 }
 
 
-function moverPieza(r,c,td){
+
+function moverPieza(r,c){
 
     if(seleccion==null){
 
         if(tablero[r][c]){
 
             seleccion={
-                r,c,
+                r:r,
+                c:c,
                 pieza:tablero[r][c]
             };
 
-            td.style.outline=
+            table.rows[r].cells[c]
+            .style.outline=
             "3px solid orange";
 
         }
@@ -358,23 +372,20 @@ function moverPieza(r,c,td){
     }else{
 
         if(movimientoValido(
-        seleccion.pieza,
-        seleccion.r,
-        seleccion.c,
-        r,c)){
+            seleccion.pieza,
+            seleccion.r,
+            seleccion.c,
+            r,c)){
 
-            tablero[r][c]=
-            seleccion.pieza;
+            tablero[r][c]=seleccion.pieza;
 
-            tablero[
-            seleccion.r]
-            [seleccion.c]=null;
-
-            iniciarTablero();
+            tablero[seleccion.r][seleccion.c]=null;
 
         }
 
         seleccion=null;
+
+        actualizarTablero(); // ESTA ES LA CLAVE
 
     }
 
